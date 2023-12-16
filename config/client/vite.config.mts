@@ -1,4 +1,5 @@
-import { readFileSync } from 'fs';
+import { existsSync, readFileSync } from 'fs';
+import { basename, dirname, resolve } from 'path';
 import preprocessor from 'svelte-preprocess';
 import { compile, preprocess } from 'svelte/compiler';
 import { defineConfig } from 'vite';
@@ -21,16 +22,73 @@ export default defineConfig({
 						return `src/client/routes/${matches[1]}.svelte`;
 					}
 
+					if (source === '__app.svelte') {
+						if (!importer) throw new Error('__app.svelte used as entry');
+
+						return 'src/client/templates/app.svelte';
+					}
+
+					if (source === '$meta') {
+						if (!importer) throw new Error('$meta used as entry');
+
+						return 'src/client/templates/$meta.js';
+					}
+
 					if (options.ssr && options.isEntry && (matches = /__client\/routes\/(.+)$/.exec(source)) !== null) {
 						return `src/client/routes/${matches[1]}.svelte`;
 					}
 
-					return options.isEntry ? source : source.endsWith('.svelte') ? source : null;
+					if (options.isEntry) {
+						return source;
+					} else if (!basename(source).includes('.')) {
+						const relative = source.startsWith('./') || source.startsWith('../');
+
+						if (relative) {
+							const path = resolve(dirname(importer!), source) + '.ts';
+
+							if (existsSync(path)) {
+								return path;
+							} else {
+								return null;
+								// this.error(`Unable to resolve ${source}, imported from ${importer}`);
+							}
+						} else if ((matches = /\$lib\/(.+)/.exec(source)) !== null) {
+							const path = `src/client/lib/${matches[1]}.ts`;
+
+							if (existsSync(path)) {
+								return path;
+							} else {
+								return null;
+								// this.error(`Unable to resolve ${source}, imported from ${importer}`);
+							}
+						} else {
+							const path = `${source}.ts`;
+
+							if (existsSync(path)) {
+								return path;
+							} else {
+								return null;
+								// this.error(`Unable to resolve ${source}, imported from ${importer}`);
+							}
+						}
+					} else if (source.endsWith('.svelte') || source.endsWith('.ts')) {
+						const relative = source.startsWith('./') || source.startsWith('../');
+
+						if (relative) {
+							return resolve(dirname(importer!), source);
+						} else if ((matches = /\$lib\/(.+)/.exec(source)) !== null) {
+							return `src/client/lib/${matches[1]}`;
+						} else {
+							return source;
+						}
+					} else {
+						return null;
+					}
 				},
 				async load(id, options) {
 					if (/__client\/routes\/(.+)$/.test(id)) {
 						if (options?.ssr) {
-							this.error(`SSR rendering route not captured by resolveId`);
+							this.error(`SSR rendering route ${id} not captured by resolveId`);
 						} else {
 							return readFileSync('src/client/templates/client.js').toString();
 						}
@@ -52,7 +110,11 @@ export default defineConfig({
 					});
 
 					matches = /src\/client\/components\/(.+).svelte/.exec(id);
-					const result = compile(preprocessed.code, { generate: options?.ssr ? 'ssr' : 'dom', hydratable: true, name: matches?.[1] || 'App' });
+					const result = compile(preprocessed.code, {
+						generate: options?.ssr ? 'ssr' : 'dom',
+						hydratable: true,
+						name: matches?.[1].split('/').at(-1) || 'App'
+					});
 
 					return { ...result.js };
 				},
