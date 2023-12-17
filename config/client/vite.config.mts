@@ -34,10 +34,6 @@ export default defineConfig({
 						return 'src/client/templates/$meta.js';
 					}
 
-					if (options.ssr && options.isEntry && (matches = /__client\/routes\/(.+)$/.exec(source)) !== null) {
-						return `src/client/routes/${matches[1]}.svelte`;
-					}
-
 					if (options.isEntry) {
 						return source;
 					} else if (!basename(source).includes('.')) {
@@ -88,7 +84,8 @@ export default defineConfig({
 				async load(id, options) {
 					if (/__client\/routes\/(.+)$/.test(id)) {
 						if (options?.ssr) {
-							this.error(`SSR rendering route ${id} not captured by resolveId`);
+							// this.error(`SSR rendering route ${id} not captured by resolveId`);
+							return readFileSync('src/client/templates/server.js').toString();
 						} else {
 							return readFileSync('src/client/templates/client.js').toString();
 						}
@@ -122,7 +119,7 @@ export default defineConfig({
 					if (isSSR) {
 						Object.entries(bundle).forEach(([, chunk]) => {
 							if (chunk.type === 'chunk' && chunk.facadeModuleId) {
-								const matches = /src\/client\/routes\/(.+)\.svelte/.exec(chunk.facadeModuleId);
+								const matches = /src\/__client\/routes\/(.+)/.exec(chunk.facadeModuleId);
 
 								if (matches) {
 									const route = matches[1];

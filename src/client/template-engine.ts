@@ -11,19 +11,20 @@ export function svelte(path: string, data: any, next: (e: any, rendered?: string
 
 	const parts = path.split('/').map((part, i, arr) => (i === arr.length - 1 ? part.replace('.svelte', '.js') : part));
 	const route = parts.slice(parts.indexOf('routes') + 1).join('/');
+
+	const meta = {
+		path: `/${route.replace(/\/?index.js/, '').replace('.js', '')}`,
+		user: data.user ?? null,
+		extra: data.__meta ?? null
+	};
+
+	delete data.user;
+	delete data.__meta;
+
 	import(/* @vite-ignore */ `${process.cwd()}/dist/client/routes/${route}`)
 		.then(({ default: page }) => {
 			try {
-				const { html, head } = page.render(props);
-
-				const meta = {
-					path: `/${route.replace(/\/?index.js/, '').replace('.js', '')}`,
-					user: data.user ?? null,
-					extra: data.__meta ?? null
-				};
-
-				delete data.user;
-				delete data.__meta;
+				const { html, head } = page.render(props, meta);
 
 				next(
 					null,
