@@ -123,9 +123,10 @@ export default defineConfig({
 
 								if (matches) {
 									const route = matches[1];
-									// this.info(`route ${route}`);
+									// this.info(`route ${route} imports: ${JSON.stringify(chunk.imports)}`);
 
 									chunk.imports.forEach((id) => {
+										// this.info(`route ${route} importing ${id}`);
 										if (id.startsWith('assets/')) {
 											const path = id.split('/').slice(1);
 											const routeNesting = route.split('/').length;
@@ -135,7 +136,7 @@ export default defineConfig({
 
 											if (!file) this.error(`Failed to correct import ${id} in route ${route}`);
 
-											const pattern = new RegExp(`import\\s*\\{.*\\}\\s*from\\s*("./assets/${file}"|'./assets/${file}')`);
+											const pattern = new RegExp(`import\\s*(?:\\{.*\\}\\s*from\\s*)?("./assets/${file}"|'./assets/${file}')`);
 											chunk.code = chunk.code.replace(pattern, (match, subId: string) => {
 												return match.replace(subId, subId.replace(`./assets/${file}`, correction + id));
 											});
@@ -153,9 +154,10 @@ export default defineConfig({
 
 								if (matches) {
 									const route = matches[1];
-									// this.info(`route ${route}`);
+									// this.info(`route ${route} imports: ${JSON.stringify(chunk.imports)}`);
 
 									chunk.imports.forEach((id) => {
+										// this.info(`route ${route} importing ${id}`);
 										if (id.startsWith('assets/')) {
 											const path = id.split('/').slice(1);
 											const importedNesting = path.length;
@@ -167,7 +169,7 @@ export default defineConfig({
 
 												if (!file) this.error(`Failed to correct import ${id} in route ${route}`);
 
-												const pattern = new RegExp(`import\\s*\\{.*\\}\\s*from\\s*("./${file}"|'./${file}')`);
+												const pattern = new RegExp(`import\\s*(?:\\{.*\\}\\s*from\\s*)?("./${file}"|'./${file}')`);
 												chunk.code = chunk.code.replace(pattern, (match, id: string) => {
 													return match.replace(id, id.replace('./', correction));
 												});
