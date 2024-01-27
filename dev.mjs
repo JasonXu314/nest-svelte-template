@@ -13,33 +13,42 @@ async function buildClient() {
 		}
 	});
 
-	await build({
-		configFile: 'config/client/vite.config.mts',
-		mode: 'development',
-		build: {
-			rollupOptions: {
-				input: sources,
-				output: {
-					dir: 'dist/client'
+	try {
+		await build({
+			configFile: 'config/client/vite.config.mts',
+			mode: 'development',
+			build: {
+				rollupOptions: {
+					input: sources,
+					output: {
+						dir: 'dist/client'
+					}
 				}
 			}
-		}
-	});
+		});
 
-	return build({
-		configFile: 'config/client/vite.config.mts',
-		mode: 'development',
-		build: {
-			ssr: true,
-			emptyOutDir: false,
-			rollupOptions: {
-				input: sources,
-				output: {
-					dir: 'dist/client'
+		await build({
+			configFile: 'config/client/vite.config.mts',
+			mode: 'development',
+			build: {
+				ssr: true,
+				emptyOutDir: false,
+				rollupOptions: {
+					input: sources,
+					output: {
+						dir: 'dist/client'
+					}
 				}
 			}
-		}
-	});
+		});
+	} catch (err) {
+		console.error(err);
+		return new Promise((resolve, reject) => {
+			setTimeout(() => {
+				buildClient().then(resolve).catch(reject);
+			}, 2500);
+		});
+	}
 }
 
 const server = await createServer({
