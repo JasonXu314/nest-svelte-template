@@ -6,7 +6,7 @@
 	let counter: number = initial;
 </script>
 
-<h1>Hello, {$params.id}</h1>
+<h1>Hello, {$params.name}</h1>
 <button on:click={() => counter++}>{counter}</button>
 <pre>{$path}</pre>
 <pre>{$route}</pre>

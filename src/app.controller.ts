@@ -20,7 +20,7 @@ export class AppController {
 	@Page()
 	testName(): void {}
 
-	@Get('/:id/hi')
+	@Get('/:name/hi')
 	@Page()
 	idHi(): void {}
 }

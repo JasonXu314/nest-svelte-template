@@ -6,7 +6,7 @@ import { Observable, from, throwError } from 'rxjs';
 import { map, mergeAll } from 'rxjs/operators';
 import { PAGE_METADATA } from '../decorators/page.decorator';
 
-function resolveRoute(parts: string[], route: string, dir: string): string | null {
+function resolveRoute(parts: string[], route: string, dir: string, params: Record<string, string>): string | null {
 	if (parts.length === 0) {
 		return route;
 	}
@@ -23,7 +23,13 @@ function resolveRoute(parts: string[], route: string, dir: string): string | nul
 			return `${route}/index`;
 		} else if (available.includes(part) && statSync(`${dir}/${part}`).isDirectory() && readdirSync(`${dir}/${part}`).includes('index.svelte')) {
 			return `${route}/${part}/index`;
-		} else if ((pattern = available.find((route) => /\[\w+\]\.svelte/.exec(route) !== null)) !== undefined) {
+		} else if (
+			(pattern = available.find((route) => {
+				const match = /\[(\w+)\]\.svelte/.exec(route);
+
+				return match !== null && match[1] in params;
+			})) !== undefined
+		) {
 			return `${route}/${pattern.replace('.svelte', '')}`;
 		} else {
 			return null;
@@ -32,9 +38,16 @@ function resolveRoute(parts: string[], route: string, dir: string): string | nul
 		const [part, ...rest] = parts;
 
 		if (available.includes(part) && statSync(`${dir}/${part}`).isDirectory()) {
-			return resolveRoute(rest, route === '' ? part : `${route}/${part}`, `${dir}/${part}`);
-		} else if ((pattern = available.find((route) => /\[\w+\]/.exec(route) !== null)) !== undefined && statSync(`${dir}/${pattern}`).isDirectory()) {
-			return resolveRoute(rest, route === '' ? pattern : `${route}/${pattern}`, `${dir}/${pattern}`);
+			return resolveRoute(rest, route === '' ? part : `${route}/${part}`, `${dir}/${part}`, params);
+		} else if (
+			(pattern = available.find((route) => {
+				const match = /\[(\w+)\]/.exec(route);
+
+				return match !== null && match[1] in params;
+			})) !== undefined &&
+			statSync(`${dir}/${pattern}`).isDirectory()
+		) {
+			return resolveRoute(rest, route === '' ? pattern : `${route}/${pattern}`, `${dir}/${pattern}`, params);
 		} else {
 			return null;
 		}
@@ -69,7 +82,7 @@ export class ClientMetadataInterceptor implements NestInterceptor {
 			);
 		} else if (Reflect.hasMetadata(PAGE_METADATA, context.getHandler())) {
 			const parts = req.path.split('/');
-			const route = resolveRoute(parts.slice(1), '', 'src/client/routes');
+			const route = resolveRoute(parts.slice(1), '', 'src/client/routes', req.params);
 
 			if (route !== null) {
 				return next.handle().pipe(

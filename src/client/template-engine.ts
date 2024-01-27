@@ -26,12 +26,12 @@ export function svelte(path: string, data: any, next: (e: any, rendered?: string
 				);
 			} catch (err) {
 				console.error(err);
-				next(new InternalServerErrorException(`Unable to render route /${__meta.route.replace('/index.js', '')}`));
+				next(new InternalServerErrorException(`Unable to render route /${__meta.route.replace(/\/index$/, '')}`));
 			}
 		})
 		.catch((err) => {
 			console.error(err);
-			next(new InternalServerErrorException(`Unable to render route /${__meta.route.replace('/index.js', '')}`));
+			next(new InternalServerErrorException(`Unable to render route /${__meta.route.replace(/\/index$/, '')}`));
 		});
 }
 
