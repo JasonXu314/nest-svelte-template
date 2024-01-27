@@ -10,6 +10,10 @@ import { PREFIX } from './auth/auth.module';
 		ServeStaticModule.forRoot({
 			rootPath: 'dist/client/assets',
 			serveRoot: '/__app'
+		}),
+		ServeStaticModule.forRoot({
+			rootPath: 'src/client/public',
+			serveRoot: '/'
 		})
 	],
 	controllers: [AppController],

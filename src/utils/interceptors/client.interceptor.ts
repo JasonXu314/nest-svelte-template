@@ -60,6 +60,7 @@ export class ClientMetadataInterceptor implements NestInterceptor {
 		const req = context.switchToHttp().getRequest<Request>(),
 			res = context.switchToHttp().getResponse<Response>();
 
+		// this case is mostly for backwards compatibility
 		if (Reflect.hasMetadata(RENDER_METADATA, context.getHandler())) {
 			const path: string = Reflect.getMetadata(RENDER_METADATA, context.getHandler());
 
