@@ -55,7 +55,7 @@ function resolveRoute(parts: string[], route: string, dir: string, params: Recor
 }
 
 @Injectable()
-export class ClientMetadataInterceptor implements NestInterceptor {
+export class RoutingInterceptor implements NestInterceptor {
 	public intercept(context: ExecutionContext, next: CallHandler): Observable<any> {
 		const req = context.switchToHttp().getRequest<Request>(),
 			res = context.switchToHttp().getResponse<Response>();
