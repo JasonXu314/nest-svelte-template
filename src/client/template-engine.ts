@@ -4,8 +4,6 @@ import { readFileSync } from 'fs';
 const template = readFileSync('src/client/templates/page.html').toString();
 
 export function svelte(path: string, data: any, next: (e: any, rendered?: string) => void) {
-	console.log(data);
-
 	const { props, __meta } = data;
 
 	import(/* @vite-ignore */ `${process.cwd()}/dist/client/routes/${__meta.route}`)
