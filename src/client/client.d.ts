@@ -8,7 +8,7 @@ interface User {
 	name: string;
 }
 
-type NicePrimitive = number | string | null | undefined | NiceObject;
+type NicePrimitive = number | string | null | undefined | Date | NiceObject;
 type NiceObject = { [k: string]: NicePrimitive | NicePrimitive[] };
 
 interface BasePageProps<T extends NiceObject = any> {
