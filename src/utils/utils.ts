@@ -42,7 +42,7 @@ export function serialize(data: any): string | undefined {
 	} else {
 		if (data !== undefined) {
 			if (typeof data === 'string') {
-				return `"${data.replace('"', '\\"')}"`;
+				return `"${data.replace('"', '\\"').replace('\\', '\\\\')}"`;
 			} else if (typeof data === 'boolean' || typeof data === 'number') {
 				return data.toString();
 			}
