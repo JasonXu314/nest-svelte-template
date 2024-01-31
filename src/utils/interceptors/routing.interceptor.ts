@@ -98,7 +98,9 @@ export class RoutingInterceptor implements NestInterceptor {
 						if ('__meta' in props) delete props.__meta;
 
 						return from(
-							new Promise((resolve, reject) => res.render('', { props, __meta }, (err, html) => (err !== null ? reject(err) : resolve(html))))
+							new Promise((resolve, reject) =>
+								res.render(route.slice(1), { props, __meta }, (err, html) => (err !== null ? reject(err) : resolve(html)))
+							)
 						);
 					}),
 					mergeAll()
