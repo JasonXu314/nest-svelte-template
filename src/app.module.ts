@@ -1,22 +1,12 @@
 import { MiddlewareConsumer, Module, NestModule } from '@nestjs/common';
-import { ServeStaticModule } from '@nestjs/serve-static';
 import { AppController } from './app.controller';
 import { AppService } from './app.service';
 import { AuthMiddleware } from './auth/auth.middleware';
 import { AuthModule, PREFIX } from './auth/auth.module';
+import { serveClient } from './utils/utils';
 
 @Module({
-	imports: [
-		AuthModule.register({ prefix: 'placeholder' }),
-		ServeStaticModule.forRoot({
-			rootPath: 'dist/client/assets',
-			serveRoot: '/__app'
-		}),
-		ServeStaticModule.forRoot({
-			rootPath: 'src/client/public',
-			serveRoot: '/'
-		})
-	],
+	imports: [AuthModule.register({ prefix: 'placeholder' }), ...serveClient()],
 	controllers: [AppController],
 	providers: [AppService, { provide: PREFIX, useValue: 'placeholder' }]
 })

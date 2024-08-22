@@ -1,3 +1,6 @@
+import { DynamicModule } from '@nestjs/common';
+import { ServeStaticModule } from '@nestjs/serve-static';
+
 export function fi<T>(): T {
 	return undefined as T;
 }
@@ -50,3 +53,15 @@ export function serialize(data: any): string | undefined {
 	}
 }
 
+export function serveClient(): DynamicModule[] {
+	return [
+		ServeStaticModule.forRoot({
+			rootPath: 'dist/client/assets',
+			serveRoot: '/__app'
+		}),
+		ServeStaticModule.forRoot({
+			rootPath: 'src/client/public',
+			serveRoot: '/'
+		})
+	];
+}
