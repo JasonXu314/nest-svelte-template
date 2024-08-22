@@ -29,7 +29,7 @@ export function serialize(data: any): string | undefined {
 			for (const prop in data) {
 				const serialized = serialize(data[prop]);
 				if (serialized !== undefined) {
-					out += `"${prop}": ${serialized},`;
+					out += `"${prop}":${serialized},`;
 				}
 			}
 			if (out !== '{') {
