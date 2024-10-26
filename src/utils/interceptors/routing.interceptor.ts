@@ -88,7 +88,6 @@ export class RoutingInterceptor implements NestInterceptor {
 		} else if (Reflect.hasMetadata(PAGE_METADATA, context.getHandler())) {
 			const parts = req.path.split('/');
 			const route = resolveRoute(parts.slice(1), '', 'src/client/routes', req.params);
-			console.log(parts, route);
 
 			if (route !== null) {
 				return next.handle().pipe(
