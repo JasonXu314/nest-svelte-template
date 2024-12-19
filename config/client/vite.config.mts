@@ -1,7 +1,7 @@
 import { existsSync, readFileSync } from 'fs';
 import { basename, dirname, resolve } from 'path';
 import preprocessor from 'svelte-preprocess';
-import { compile, preprocess } from 'svelte/compiler';
+import { compile, compileModule, preprocess } from 'svelte/compiler';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
@@ -31,7 +31,7 @@ export default defineConfig({
 					if (source === '$meta') {
 						if (!importer) throw new Error('$meta used as entry');
 
-						return 'src/client/templates/$meta.js';
+						return 'src/client/templates/$meta.svelte.js';
 					}
 
 					if (options.isEntry) {
@@ -95,25 +95,51 @@ export default defineConfig({
 				},
 				async transform(code, id, options) {
 					// this.info(`transforming ${id}`);
-					if (!id.endsWith('.svelte')) return null;
+					if (!id.includes('.svelte')) return null;
 					if (options?.ssr) isSSR = true;
 
-					let matches = /.*\/([^/]+\.svelte)/.exec(id);
-					if (!matches) throw new Error('Svelte matching error');
-					const filename = matches[1];
+					if (id.endsWith('.js')) {
+						let matches = /.*\/([^/]+\.svelte)/.exec(id);
+						if (!matches) throw new Error('Svelte matching error');
+						const filename = matches[1];
 
-					const preprocessed = await preprocess(code, preprocessor({ typescript: { compilerOptions: { module: 'es2020', target: 'es2020' } } }), {
-						filename
-					});
+						const preprocessed = await preprocess(
+							code,
+							preprocessor({
+								typescript: { compilerOptions: { module: 'es2020', target: 'es2020', verbatimModuleSyntax: true } }
+							}),
+							{ filename }
+						);
 
-					matches = /src\/client\/components\/(.+).svelte/.exec(id);
-					const result = compile(preprocessed.code, {
-						generate: options?.ssr ? 'ssr' : 'dom',
-						hydratable: true,
-						name: matches?.[1].split('/').at(-1) || 'App'
-					});
+						matches = /src\/client\/(.+)\.svelte\.js/.exec(id);
+						const result = compileModule(preprocessed.code, {
+							generate: options?.ssr ? 'server' : 'client',
+							filename: matches?.[1].split('/').at(-1) || 'unknown'
+						});
 
-					return { ...result.js };
+						return { ...result.js };
+					} else {
+						let matches = /.*\/([^/]+\.svelte)/.exec(id);
+						if (!matches) throw new Error('Svelte matching error');
+						const filename = matches[1];
+
+						const preprocessed = await preprocess(
+							code,
+							preprocessor({
+								typescript: { compilerOptions: { module: 'es2020', target: 'es2020', verbatimModuleSyntax: true } }
+							}),
+							{ filename }
+						);
+
+						matches = /src\/client\/lib\/components\/(.+)\.svelte/.exec(id);
+						const result = compile(preprocessed.code, {
+							generate: options?.ssr ? 'server' : 'client',
+							name: matches?.[1].split('/').at(-1) || 'App',
+							runes: true
+						});
+
+						return { ...result.js };
+					}
 				},
 				generateBundle(options, bundle) {
 					if (isSSR) {
@@ -143,7 +169,7 @@ export default defineConfig({
 										}
 									});
 
-									chunk.fileName = `routes/${route}.js`;
+									chunk.fileName = `routes/${route}.svelte.js`;
 								}
 							}
 						});
@@ -162,22 +188,20 @@ export default defineConfig({
 											const path = id.split('/').slice(1);
 											const importedNesting = path.length;
 											const routeNesting = route.split('/').length;
+											const file = path.at(-1);
+											const correction =
+												routeNesting > importedNesting ? new Array(routeNesting - importedNesting).fill('..').join('/') + '/' : './';
 
-											if (routeNesting > importedNesting) {
-												const correction = new Array(routeNesting - importedNesting).fill('..').join('/') + '/';
-												const file = path.at(-1);
+											if (!file) this.error(`Failed to correct import ${id} in route ${route}`);
 
-												if (!file) this.error(`Failed to correct import ${id} in route ${route}`);
-
-												const pattern = new RegExp(`import\\s*(?:\\{.*\\}\\s*from\\s*)?("./${file}"|'./${file}')`);
-												chunk.code = chunk.code.replace(pattern, (match, id: string) => {
-													return match.replace(id, id.replace('./', correction));
-												});
-											}
+											const pattern = new RegExp(`import\\s*(?:\\{.*\\}\\s*from\\s*)?("./${file}"|'./${file}')`);
+											chunk.code = chunk.code.replace(pattern, (match, id: string) => {
+												return match.replace(id, id.replace('./', correction));
+											});
 										}
 									});
 
-									chunk.fileName = `assets/${route}.js`;
+									chunk.fileName = `assets/${route}.svelte.js`;
 								}
 							}
 						});

@@ -2,7 +2,7 @@ import { CallHandler, ExecutionContext, Injectable, NestInterceptor, NotFoundExc
 import { RENDER_METADATA } from '@nestjs/common/constants';
 import { Request, Response } from 'express';
 import { readdirSync, statSync } from 'fs';
-import { Observable, from, throwError } from 'rxjs';
+import { from, Observable, throwError } from 'rxjs';
 import { map, mergeAll } from 'rxjs/operators';
 import { PAGE_METADATA } from '../decorators/page.decorator';
 
@@ -76,7 +76,7 @@ export class RoutingInterceptor implements NestInterceptor {
 					const props = val ?? {};
 
 					const user = props.user ?? req.user;
-					const defaultMeta = { route, path: req.path, user, params: req.params };
+					const defaultMeta = { route, path: req.path, user, params: req.params, query: req.query };
 					const __meta = props.__meta ? { ...defaultMeta, ...props.__meta } : defaultMeta;
 
 					if ('user' in props) delete props.user;
@@ -95,7 +95,7 @@ export class RoutingInterceptor implements NestInterceptor {
 						const props = val ?? {};
 
 						const user = props.user ?? req.user;
-						const defaultMeta = { route, path: req.path, user, params: req.params };
+						const defaultMeta = { route, path: req.path, user, params: req.params, query: req.query };
 						const __meta = props.__meta ? { ...defaultMeta, ...props.__meta } : defaultMeta;
 
 						if ('user' in props) delete props.user;

@@ -23,6 +23,6 @@
 			"$lib/*": ["src/client/lib/*"]
 		}
 	},
-	"include": ["./**/*.d.ts", "./**/*.svelte"]
+	"include": ["./**/*.d.ts", "./**/*.svelte", "./**/*.svelte.ts", "./**/*.ts"]
 }
 

@@ -1,7 +1,5 @@
 <script lang="ts">
-	export let message: string | null = null,
-		jsonDump: any = null,
-		links: Record<string, string> = {};
+	let { message = null, jsonDump = null, links = {} }: { message?: string | null; jsonDump?: any; links?: Record<string, string> } = $props();
 </script>
 
 <svelte:head>
