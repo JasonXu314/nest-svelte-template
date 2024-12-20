@@ -1,6 +1,6 @@
 import { existsSync, readFileSync } from 'fs';
 import { basename, dirname, resolve } from 'path';
-import preprocessor from 'svelte-preprocess';
+import preprocessor, { sveltePreprocess } from 'svelte-preprocess';
 import { compile, compileModule, preprocess } from 'svelte/compiler';
 import { defineConfig } from 'vite';
 
@@ -125,7 +125,7 @@ export default defineConfig({
 
 						const preprocessed = await preprocess(
 							code,
-							preprocessor({
+							sveltePreprocess({
 								typescript: { compilerOptions: { module: 'es2020', target: 'es2020', verbatimModuleSyntax: true } }
 							}),
 							{ filename }
@@ -135,7 +135,8 @@ export default defineConfig({
 						const result = compile(preprocessed.code, {
 							generate: options?.ssr ? 'server' : 'client',
 							name: matches?.[1].split('/').at(-1) || 'App',
-							runes: true
+							runes: true,
+							css: 'injected'
 						});
 
 						return { ...result.js };
