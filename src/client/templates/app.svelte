@@ -1,13 +1,16 @@
 <script>
-	import { extra, params, path, route, user } from '$meta';
+	import { __state } from '$meta';
 
-	export let __meta, __props, __route;
+	let { __meta, __props, __route } = $props();
 
-	$route = __meta.route;
-	$path = __meta.path;
-	$params = __meta.params;
-	$user = __meta.user;
-	$extra = __meta.extra;
+	__state.route = __meta.route;
+	__state.path = __meta.path;
+	__state.params = __meta.params;
+	__state.query = __meta.query;
+	__state.user = __meta.user;
+	__state.extra = __meta.extra;
+
+	const Route = $derived(__route);
 </script>
 
-<svelte:component this={__route} {...__props}></svelte:component>
+<Route {...__props} />
