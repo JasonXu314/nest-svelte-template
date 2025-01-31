@@ -5,6 +5,9 @@ import { compile, compileModule, preprocess } from 'svelte/compiler';
 import { defineConfig } from 'vite';
 
 export default defineConfig({
+	resolve: {
+		conditions: ['svelte']
+	},
 	plugins: [
 		(() => {
 			let isSSR = false;
