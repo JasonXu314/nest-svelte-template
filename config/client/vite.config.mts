@@ -38,7 +38,7 @@ export default defineConfig({
 					}
 
 					if (options.isEntry) {
-						return source;
+						return resolve(source); // NOTE: probably unnecessary to resolve to absolute but whatever
 					} else if (!basename(source).includes('.')) {
 						const relative = source.startsWith('./') || source.startsWith('../');
 
@@ -46,7 +46,7 @@ export default defineConfig({
 							const path = resolve(dirname(importer!), source) + '.ts';
 
 							if (existsSync(path)) {
-								return path;
+								return resolve(path);
 							} else {
 								return null;
 								// this.error(`Unable to resolve ${source}, imported from ${importer}`);
@@ -55,7 +55,7 @@ export default defineConfig({
 							const path = `src/client/lib/${matches[1]}.ts`;
 
 							if (existsSync(path)) {
-								return path;
+								return resolve(path);
 							} else {
 								return null;
 								// this.error(`Unable to resolve ${source}, imported from ${importer}`);
@@ -64,7 +64,7 @@ export default defineConfig({
 							const path = `${source}.ts`;
 
 							if (existsSync(path)) {
-								return path;
+								return resolve(path);
 							} else {
 								return null;
 								// this.error(`Unable to resolve ${source}, imported from ${importer}`);
@@ -76,9 +76,9 @@ export default defineConfig({
 						if (relative) {
 							return resolve(dirname(importer!), source);
 						} else if ((matches = /\$lib\/(.+)/.exec(source)) !== null) {
-							return `src/client/lib/${matches[1]}`;
+							return resolve(`src/client/lib/${matches[1]}`);
 						} else {
-							return source;
+							return resolve(source);
 						}
 					} else {
 						return null;
